@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.boterop.xpascend.XPAscend;
 
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
@@ -17,31 +18,33 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 public class XPEventHandler {
     @SubscribeEvent
     public static void onXPChange(PlayerXpEvent.XpChange event) {
-        updateHealth(event.getEntity());
+        update(event.getEntity());
     }
 
     @SubscribeEvent
     public static void onLogged(PlayerEvent.PlayerLoggedInEvent event) {
-        updateHealth(event.getEntity());
+        update(event.getEntity());
     }
 
-    private static void updateHealth(Player player) {
+    private static void update(Player player) {
         int playerExp = player.experienceLevel;
         float difficulty = 0.4f;
-        int hearts = (int) Math.floor(playerExp * difficulty);
+        int amount = (int) Math.floor(playerExp * difficulty);
+        amount = amount < 0 ? 0 : amount;
 
-        hearts = hearts < 0 ? 0 : hearts;
-
-        AttributeModifier maxHealth = new AttributeModifier("MaxHealth", hearts, AttributeModifier.Operation.ADDITION);
-
-        AttributeInstance attributeInstance = player.getAttribute(Attributes.MAX_HEALTH);
-
+        addAttribute(player, Attributes.ATTACK_DAMAGE, "AttackDamage", amount);
+        addAttribute(player, Attributes.MAX_HEALTH, "MaxHealth", amount);
+    }
+    
+    private static void addAttribute(Player player, Attribute attribute, String modifier, int value) {
+        AttributeInstance attributeInstance = player.getAttribute(attribute);
         Set<AttributeModifier> modifiers = attributeInstance.getModifiers();
 
         if (modifiers.size() >= 1) {
             attributeInstance.removeModifiers();
         }
 
-        attributeInstance.addPermanentModifier(maxHealth);
+        AttributeModifier amount = new AttributeModifier(modifier, value, AttributeModifier.Operation.ADDITION);
+        attributeInstance.addPermanentModifier(amount);
     }
 }
