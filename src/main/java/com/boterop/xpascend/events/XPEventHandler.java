@@ -1,6 +1,8 @@
 package com.boterop.xpascend.events;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +24,7 @@ import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 public class XPEventHandler {
     private static final float EASY = 0.5f;
     private static final float MEDIUM = 0.25f;
-    private static final float HARD = 0.125f;
+    private static final float HARD = 0.2f;
     
     private static int level = 0;
     
@@ -58,30 +60,38 @@ public class XPEventHandler {
         int amount = (int) Math.floor(playerExp * difficulty);
         amount = amount < 0 ? 0 : amount;
         
-        if (amount == level) return; // No change in level, skip updating attributes
+        if (amount == level) return;
         
 		level = amount;
-        player.displayClientMessage(Component.literal("level up: " + amount), true);
+        player.displayClientMessage(Component.literal("level up: " + amount), false);
         
         Map<String, Attribute> attributes = new HashMap<>();
-        attributes.put("Armor", Attributes.ARMOR);
-        attributes.put("ArmorToughness", Attributes.ARMOR_TOUGHNESS);
         attributes.put("AttackDamage", Attributes.ATTACK_DAMAGE);
         attributes.put("AttackKnockback", Attributes.ATTACK_KNOCKBACK);
         attributes.put("AttackSpeed", Attributes.ATTACK_SPEED);
         attributes.put("KnockbackResistance", Attributes.KNOCKBACK_RESISTANCE);
         attributes.put("Luck", Attributes.LUCK);
-        attributes.put("MaxAbsorption", Attributes.MAX_ABSORPTION);
         attributes.put("MaxHealth", Attributes.MAX_HEALTH);
         attributes.put("MovementSpeed", Attributes.MOVEMENT_SPEED);
+        
+        Map<String, Float> attributeMaxValues = new HashMap<>();
+        attributeMaxValues.put("AttackKnockback", 5f);
+        attributeMaxValues.put("KnockbackResistance", 1f);
+        attributeMaxValues.put("MovementSpeed", 0.08f);
+        
+        List<String> percentedAttributes = new ArrayList<>();
+        percentedAttributes.add("KnockbackResistance");
+        percentedAttributes.add("MovementSpeed");
 
         double value;
         for (Map.Entry<String, Attribute> entry : attributes.entrySet()) {
         	value = amount;
-        	if (entry.getValue() == Attributes.MOVEMENT_SPEED) {
-        		value = amount / 100.0; // Movement speed is a percentage
-        		value = Math.min(value, 0.06); // Ensure max speed added is capped at 6%
+        	if (percentedAttributes.contains(entry.getKey())) {
+        		value = amount / 100f;
         	}
+        	if (attributeMaxValues.containsKey(entry.getKey())) {
+				value = Math.min(value, attributeMaxValues.get(entry.getKey()));
+			}
 			addAttribute(player, entry.getKey(), entry.getValue(), value);
 		}
     }
