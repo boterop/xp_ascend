@@ -8,7 +8,6 @@ import java.util.Set;
 
 import com.boterop.xpascend.XPAscend;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -18,15 +17,12 @@ import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
 @Mod.EventBusSubscriber(modid = XPAscend.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class XPEventHandler {
     private static final float EASY = 0.5f;
     private static final float MEDIUM = 0.25f;
     private static final float HARD = 0.2f;
-    
-    private static int level = 0;
     
     @SubscribeEvent
     public static void onXPChange(PlayerXpEvent.XpChange event) {
@@ -59,11 +55,6 @@ public class XPEventHandler {
         
         int amount = (int) Math.floor(playerExp * difficulty);
         amount = amount < 0 ? 0 : amount;
-        
-        if (amount == level) return;
-        
-		level = amount;
-        player.displayClientMessage(Component.literal("level up: " + amount), false);
         
         Map<String, Attribute> attributes = new HashMap<>();
         attributes.put("AttackDamage", Attributes.ATTACK_DAMAGE);
