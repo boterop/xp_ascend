@@ -58,6 +58,7 @@ public class XPEventHandler {
         
         Map<String, Float> customValues = new HashMap<>();
         customValues.put("AttackKnockback", amount * 0.2f);
+        customValues.put("AttackSpeed", amount * 0.5f);
         customValues.put("MaxHealth", amount * 2f);
         customValues.put("MovementSpeed", amount * 0.2f);
         
