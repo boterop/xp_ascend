@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.boterop.xpascend.XPAscend;
+import com.boterop.xpascend.utils.Difficulty;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -18,15 +18,9 @@ import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
 @Mod.EventBusSubscriber(modid = XPAscend.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class XPEventHandler {
-    private static final float EASY = 0.5f;
-    private static final float MEDIUM = 0.25f;
-    private static final float HARD = 0.2f;
-    
-    private static int level = 0;
     
     @SubscribeEvent
     public static void onXPChange(PlayerXpEvent.XpChange event) {
@@ -40,30 +34,9 @@ public class XPEventHandler {
 
     private static void update(Player player) {
         int playerExp = player.experienceLevel;
-        int levelDifficulty = player.level().getDifficulty().ordinal();
-        float difficulty = 0f;
-        switch (levelDifficulty) {
-			case 1: // EASY
-				difficulty = EASY;
-				break;
-			case 2: // NORMAL
-				difficulty = MEDIUM;
-				break;
-			case 3: // HARD
-				difficulty = HARD;
-				break;
-			default:
-				difficulty = 0f; // PEACEFUL or unknown difficulty
-				break;
-		}
         
-        int amount = (int) Math.floor(playerExp * difficulty);
+        int amount = (int) Math.floor(playerExp * Difficulty.multiplier(player));
         amount = amount < 0 ? 0 : amount;
-        
-        if (amount == level) return;
-        
-		level = amount;
-        player.displayClientMessage(Component.literal("level up: " + amount), false);
         
         Map<String, Attribute> attributes = new HashMap<>();
         attributes.put("AttackDamage", Attributes.ATTACK_DAMAGE);
@@ -82,17 +55,28 @@ public class XPEventHandler {
         List<String> percentedAttributes = new ArrayList<>();
         percentedAttributes.add("KnockbackResistance");
         percentedAttributes.add("MovementSpeed");
+        
+        Map<String, Float> customValues = new HashMap<>();
+        customValues.put("AttackKnockback", amount * 0.2f);
+        customValues.put("AttackSpeed", amount * 0.5f);
+        customValues.put("MaxHealth", amount * 2f);
+        customValues.put("MovementSpeed", amount * 0.2f);
+        
 
         double value;
         for (Map.Entry<String, Attribute> entry : attributes.entrySet()) {
         	value = amount;
-        	if (percentedAttributes.contains(entry.getKey())) {
-        		value = amount / 100f;
+        	String key = entry.getKey();
+        	if(customValues.containsKey(key)) {
+        		value = customValues.get(key);
         	}
-        	if (attributeMaxValues.containsKey(entry.getKey())) {
-				value = Math.min(value, attributeMaxValues.get(entry.getKey()));
+        	if (percentedAttributes.contains(key)) {
+        		value = value / 100f;
+        	}
+        	if (attributeMaxValues.containsKey(key)) {
+				value = Math.min(value, attributeMaxValues.get(key));
 			}
-			addAttribute(player, entry.getKey(), entry.getValue(), value);
+			addAttribute(player, key, entry.getValue(), value);
 		}
     }
     
