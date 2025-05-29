@@ -7,12 +7,12 @@ import java.util.Map;
 import java.util.Set;
 
 import com.boterop.xpascend.XPAscend;
+import com.boterop.xpascend.utils.Difficulty;
 
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,9 +21,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 @Mod.EventBusSubscriber(modid = XPAscend.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class XPEventHandler {
-    private static final float EASY = 0.4f;
-    private static final float MEDIUM = 0.3f;
-    private static final float HARD = 0.2f;
     
     @SubscribeEvent
     public static void onXPChange(PlayerXpEvent.XpChange event) {
@@ -34,43 +31,11 @@ public class XPEventHandler {
     public static void onLogged(PlayerEvent.PlayerLoggedInEvent event) {
         update(event.getEntity());
     }
-    
-    @SubscribeEvent
-    public static void onPlayerHurt(LivingHurtEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
-
-        int playerExp = player.experienceLevel;
-        int levelDifficulty = player.level().getDifficulty().ordinal();
-
-        float difficulty = switch (levelDifficulty) {
-            case 1 -> EASY * 15;
-            case 2 -> MEDIUM * 13;
-            case 3 -> HARD * 10;
-            default -> 0f;
-        };
-
-        float reductionFactor = (float) playerExp * difficulty / 100f;
-
-        reductionFactor = Math.min(reductionFactor, 0.9f);
-
-        float originalDamage = event.getAmount();
-        float reducedDamage = originalDamage * (1 - reductionFactor);
-
-        event.setAmount(reducedDamage);
-
-    }
 
     private static void update(Player player) {
         int playerExp = player.experienceLevel;
-        int levelDifficulty = player.level().getDifficulty().ordinal();
-        float difficulty = switch (levelDifficulty) {
-	        case 1 -> EASY;
-	        case 2 -> MEDIUM;
-	        case 3 -> HARD;
-	        default -> 0f;
-		};
         
-        int amount = (int) Math.floor(playerExp * difficulty);
+        int amount = (int) Math.floor(playerExp * Difficulty.multiplier(player));
         amount = amount < 0 ? 0 : amount;
         
         Map<String, Attribute> attributes = new HashMap<>();
