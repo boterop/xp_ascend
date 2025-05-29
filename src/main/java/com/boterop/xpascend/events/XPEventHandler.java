@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,8 +21,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 @Mod.EventBusSubscriber(modid = XPAscend.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class XPEventHandler {
-    private static final float EASY = 0.5f;
-    private static final float MEDIUM = 0.25f;
+    private static final float EASY = 0.4f;
+    private static final float MEDIUM = 0.3f;
     private static final float HARD = 0.2f;
     
     @SubscribeEvent
@@ -33,25 +34,41 @@ public class XPEventHandler {
     public static void onLogged(PlayerEvent.PlayerLoggedInEvent event) {
         update(event.getEntity());
     }
+    
+    @SubscribeEvent
+    public static void onPlayerHurt(LivingHurtEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        int playerExp = player.experienceLevel;
+        int levelDifficulty = player.level().getDifficulty().ordinal();
+
+        float difficulty = switch (levelDifficulty) {
+            case 1 -> EASY * 15;
+            case 2 -> MEDIUM * 13;
+            case 3 -> HARD * 10;
+            default -> 0f;
+        };
+
+        float reductionFactor = (float) playerExp * difficulty / 100f;
+
+        reductionFactor = Math.min(reductionFactor, 0.9f);
+
+        float originalDamage = event.getAmount();
+        float reducedDamage = originalDamage * (1 - reductionFactor);
+
+        event.setAmount(reducedDamage);
+
+    }
 
     private static void update(Player player) {
         int playerExp = player.experienceLevel;
         int levelDifficulty = player.level().getDifficulty().ordinal();
-        float difficulty = 0f;
-        switch (levelDifficulty) {
-			case 1: // EASY
-				difficulty = EASY;
-				break;
-			case 2: // NORMAL
-				difficulty = MEDIUM;
-				break;
-			case 3: // HARD
-				difficulty = HARD;
-				break;
-			default:
-				difficulty = 0f; // PEACEFUL or unknown difficulty
-				break;
-		}
+        float difficulty = switch (levelDifficulty) {
+	        case 1 -> EASY;
+	        case 2 -> MEDIUM;
+	        case 3 -> HARD;
+	        default -> 0f;
+		};
         
         int amount = (int) Math.floor(playerExp * difficulty);
         amount = amount < 0 ? 0 : amount;
@@ -73,17 +90,27 @@ public class XPEventHandler {
         List<String> percentedAttributes = new ArrayList<>();
         percentedAttributes.add("KnockbackResistance");
         percentedAttributes.add("MovementSpeed");
+        
+        Map<String, Float> customValues = new HashMap<>();
+        customValues.put("AttackKnockback", amount * 0.2f);
+        customValues.put("MaxHealth", amount * 2f);
+        customValues.put("MovementSpeed", amount * 0.2f);
+        
 
         double value;
         for (Map.Entry<String, Attribute> entry : attributes.entrySet()) {
         	value = amount;
-        	if (percentedAttributes.contains(entry.getKey())) {
-        		value = amount / 100f;
+        	String key = entry.getKey();
+        	if(customValues.containsKey(key)) {
+        		value = customValues.get(key);
         	}
-        	if (attributeMaxValues.containsKey(entry.getKey())) {
-				value = Math.min(value, attributeMaxValues.get(entry.getKey()));
+        	if (percentedAttributes.contains(key)) {
+        		value = value / 100f;
+        	}
+        	if (attributeMaxValues.containsKey(key)) {
+				value = Math.min(value, attributeMaxValues.get(key));
 			}
-			addAttribute(player, entry.getKey(), entry.getValue(), value);
+			addAttribute(player, key, entry.getValue(), value);
 		}
     }
     
