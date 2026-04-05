@@ -1,5 +1,6 @@
 package io.boterop.xpascend;
 
+import io.boterop.xpascend.events.HurtEventHandler;
 import io.boterop.xpascend.events.XPEventHandler;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -12,5 +13,6 @@ public class XPAscend {
 
     public XPAscend(IEventBus modEventBus, ModContainer modContainer) {
         NeoForge.EVENT_BUS.register(XPEventHandler.class);
+        NeoForge.EVENT_BUS.register(HurtEventHandler.class);
     }
 }
