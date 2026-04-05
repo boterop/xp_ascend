@@ -1,0 +1,13 @@
+{
+  "itemGroup.xpascend": "Example Mod Tab",
+  "block.xpascend.example_block": "Example Block",
+  "item.xpascend.example_item": "Example Item",
+
+  "xpascend.configuration.title": "XP Ascend Configs",
+  "xpascend.configuration.section.xpascend.common.toml": "XP Ascend Configs",
+  "xpascend.configuration.section.xpascend.common.toml.title": "XP Ascend Configs",
+  "xpascend.configuration.items": "Item List",
+  "xpascend.configuration.logDirtBlock": "Log Dirt Block",
+  "xpascend.configuration.magicNumberIntroduction": "Magic Number Text",
+  "xpascend.configuration.magicNumber": "Magic Number"
+}
