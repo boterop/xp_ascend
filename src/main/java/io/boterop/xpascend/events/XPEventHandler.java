@@ -5,8 +5,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jline.utils.Log;
-
 import io.boterop.xpascend.XPAscend;
 import io.boterop.xpascend.utils.Difficulty;
 
@@ -76,7 +74,8 @@ public class XPEventHandler {
         Map<String, Double> maxValues = new HashMap<>();
         maxValues.put("attack_knockback", 5d);
         maxValues.put("knockback_resistance", 1d);
-        maxValues.put("movement_speed", 0.08d);
+        maxValues.put("movement_speed", 20d);
+
 
         switch (attr) {
             case "attack_knockback":

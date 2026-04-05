@@ -1,7 +1,5 @@
 package io.boterop.xpascend.events;
 
-import org.jline.utils.Log;
-
 import io.boterop.xpascend.utils.Difficulty;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,7 +21,6 @@ public class HurtEventHandler {
         float originalDamage = event.getAmount();
         float reducedDamage = originalDamage / (1 + reductionFactor);
 
-        Log.info("Reducing damage from " + originalDamage + " to " + reductionFactor + " = " + reducedDamage);
         event.setAmount(reducedDamage);
     }
 }
